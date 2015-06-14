@@ -27,8 +27,7 @@
 exports.config = function (opt)
 {
 	var config,
-		configFile = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] +
-				"/.teslams/config.json",
+		configFile = "/home/chriscrewdson/.teslams/config.json",
 		configSuccess = false;
 
 	if (opt.argv['$0'].indexOf("visualize.js") != -1)
