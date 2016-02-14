@@ -42,6 +42,22 @@ exports.config = function (opt)
 		{
 			console.warn("Unable to load " + configFile + "; web server authentication turned off");
 		}
+
+		if (!configSuccess){
+			console.log("try to parse visualize config from environment");
+
+			try
+			{
+				config = {}
+				config.visualize = JSON.parse(process.env.VISUALIZE_CONFIG)
+				configSuccess = true
+				console.log("successfully parsed visualize config from environment");
+			}
+			catch (err)
+			{
+				console.log("error while parsing visualize config");
+			}
+		}
 		if (configSuccess)
 		{
 			if (opt.argv.debug) {
