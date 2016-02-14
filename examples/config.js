@@ -45,16 +45,18 @@ exports.config = function (opt)
 		}
 
 		if (!configSuccess){
-			console.log("try to parse vizualize config from environment");
+			console.log("try to parse visualize config from environment");
 
 			try
 			{
-				config = JSON.parse(process.env.VISUALIZE_CONFIG)
+				config = {}
+				config.visualize = JSON.parse(process.env.VISUALIZE_CONFIG)
 				configSuccess = true
+				console.log("successfully parsed visualize config from environment");
 			}
 			catch (err)
 			{
-				console.log("error while parsing vizualize config");
+				console.log("error while parsing visualize config");
 			}
 		}
 		if (configSuccess)
