@@ -7,8 +7,9 @@
 // You need a valid Google Maps v3 API key to use this script
 //  https://developers.google.com/maps/documentation/javascript/tutorial#api_key
 //
-var apiKey = 'AIzaSyAtYQ9xjedv3B6_2HwsDVMY7oHlbNs-cvk';
-
+require('pkginfo')(module, 'version');
+console.log( module.exports.version );
+var apiKey = 'AIzaSyBAQ9orToKfA-vAzbFjdyE-PIE86P2IKBY';
 
 function argchecker( argv ) {
     if (argv.db === true) throw 'MongoDB database name is unspecified. Use -d dbname or --db dbname';
@@ -66,31 +67,44 @@ var nav = "";
 var system = "";
 var fwVersion = "";
 var vin = "";
+var name = "";
 var optionString = "";
+var rawoptions = "";
 var baseString = "";
 
 var baseText = {
     RENA: "North American",
     REEU: "European",
     TM02: "Signature",
-    PF01: "P",
     PF00: "S",
-    BT85: "85PLUS",
+    PBT85: "P85",
+    PX01: "PLUS",
     BT60: "60",
-    BT40: "40"
+    BT40: "40",
+    P85D: "P85",
+    BT70: "70",
+    DV4W: "D",
+    BP01: "L"
+    
 };
 var optionText = {
+    PPTI: "<li> titanium metallic</li>",
     PBSB: "<li> black</li>",
+    PMBL: "<li> obsidian black</li>",
     PBCW: "<li> solid white</li>",
     PMSS: "<li> silver</li>",
+    PMNG: "<li> midnight silver metallic</li>",
     PMTG: "<li> dolphin gray metallic</li>",
     PMAB: "<li> metallic brown</li>",
     PMMB: "<li> metallic blue</li>",
+    PPSB: "<li> metallic blue</li>",
     PMSG: "<li> metallic green</li>",
     PPSW: "<li> pearl white</li>",
     PPMR: "<li> multi-coat red</li>",
     PPSR: "<li> signature red</li>",
     RFPO: "<li> panorama roof</li>",
+    RFP2: "<li> panorama roof</li>",
+    WTAR: "<li> aero 19\" wheels</li>",
     WT19: "<li> silver 19\" wheels</li>",
     WT21: "<li> silver 21\" wheels</li>",
     WTSP: "<li> gray 21\" wheels</li>",
@@ -99,12 +113,55 @@ var optionText = {
     SU01: "<li> air suspension</li>",
     SC01: "<li> super charger enabled</li>",
     TP01: "<li> tech package</li>",
+    TP02: "<li> tech package with autopilot</li>",
     AU01: "<li> audio upgrade</li>",
     CH01: "<li> dual charger</li>",
     PK01: "<li> parking sensors</li>",
     CW01: "<li> cold weather package</li>",
-    LP01: "<li> premium lighting package</li>",
-    SP01: "<li> security package</li>"
+    CW02: "<li> cold weather package</li>",
+    LP01: "<li> premium interior lighting</li>",
+    PI01: "<li> premium interior and lighting</li>",
+    FG02: "<li> premium exterior lighting</li>",
+    SP01: "<li> security package</li>",
+    IDHG: "<li> obeche gloss wood decor</li>",
+    IDOG: "<li> obeche gloss wood decor</li>",
+    IDOM: "<li> obeche matte wood decor</li>",
+    IDHM: "<li> obeche matte wood decor</li>",
+    IDCF: "<li> carbon fiber decor</li>",
+    QZMB: "<li> black performance leather seats</li>",
+    QYMB: "<li> black performance leather seats</li>",
+    QXMB: "<li> black leather seats</li>",
+    QPMB: "<li> black leather seats</li>",
+    QREB: "<li> black next generation leather seats</li>",
+    QRLB: "<li> black next generation leather seats</li>",
+    QNEB: "<li> black next generation leather seats</li>",
+    QNLB: "<li> black next generation leather seats</li>",
+    QYMT: "<li> tan performance leather seats</li>",
+    QZMT: "<li> tan performance leather seats</li>",
+    QPMT: "<li> tan leather seats</li>",
+    QXMT: "<li> tan leather seats</li>",
+    QRET: "<li> tan next generation leather seats</li>",
+    QRLT: "<li> tan next generation leather seats</li>",
+    QNLT: "<li> tan next generation leather seats</li>",
+    QNET: "<li> tan next generation leather seats</li>",
+    QYMG: "<li> grey performance leather seats</li>",
+    QZMG: "<li> grey performance leather seats</li>",
+    QXMG: "<li> grey leather seats</li>",
+    QCMG: "<li> grey leather seats</li>",
+    QREG: "<li> grey next generation leather seats</li>",
+    QRLG: "<li> grey next generation leather seats</li>",
+    QNLG: "<li> grey next generation leather seats</li>",
+    QNEG: "<li> grey next generation leather seats</li>",
+    QRLG: "<li> grey next generation leather seats</li>",
+    SR02: "<li> executive rear seats</li>",
+    UTAW: "<li> white alcantara headliner</li>",
+    UTAB: "<li> black alcantara headliner</li>",
+    IX01: "<li> extended nappa leather</li>",
+    X019: "<li> carbon fibre spoiler</li>",
+    BC0R: "<li> red brake calipers</li>",
+    PA01: "<li> paint armor</li>",
+    YF01: "<li> matching yacht floor</li>",
+    DA02: "<li> autopilot</li>"
 };
     
 
@@ -267,8 +324,24 @@ app.namespace(baseUrl, function() {
                 if (docs.length > 1)
                     console.log("congratulations, you have more than one Tesla Model S - this only supports your first car");
                 vin = docs[0].vehicles.vin;
+                name = docs[0].vehicles.display_name;
                 
                 optionString = "<ul>";
+                rawoptions = docs[0].vehicles.option_codes;
+                rawoptions = rawoptions.replace("PPSR", "COL0-PPSR");
+                rawoptions = rawoptions.replace("PBSB", "COL1-PBSB");
+                rawoptions = rawoptions.replace("PBCW", "COL1-PBCW");
+                rawoptions = rawoptions.replace("PMAB", "COL2-PMAB");
+                rawoptions = rawoptions.replace("PMSG", "COL2-PMSG");
+                rawoptions = rawoptions.replace("PMMB", "COL2-PMMB");
+                rawoptions = rawoptions.replace("PMNG", "COL2-PMNG");
+                rawoptions = rawoptions.replace("PMBL", "COL2-PMBL");
+                rawoptions = rawoptions.replace("PMSS", "COL2-PMSS");
+                rawoptions = rawoptions.replace("PMTG", "COL2-PMTG");
+                rawoptions = rawoptions.replace("PMTI", "COL2-PMTI");
+                rawoptions = rawoptions.replace("PPTI", "COL2-PPTI");
+                rawoptions = rawoptions.replace("PPSW", "COL3-PPSW");
+                rawoptions = rawoptions.replace("PPMR", "COL3-PPMR");
                 var options = docs[0].vehicles.option_codes.split(',');
                 for (var i = 0; i < options.length; i++) {
                     if (optionText[options[i]] !== undefined)
@@ -341,6 +414,37 @@ app.namespace(baseUrl, function() {
                         fwVersion = "5.14 ";
                     else if (fwBuild.substr(0,4) == "1.67")
                         fwVersion = "6.0 ";
+                    else if (fwBuild.substr(0,4) == "2.2.")
+                        fwVersion = "6.1 ";
+                    else if (fwBuild.substr(0,4) == "2.4.")
+                        fwVersion = "6.2 ";
+                    else if (fwBuild.substr(0,4) == "2.5.")
+                        fwVersion = "6.2 ";
+                    else if (fwBuild.substr(0,4) == "2.7.")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,4) == "2.8.")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,6) == "2.9.12")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,6) == "2.9.40")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,6) == "2.9.68")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,6) == "2.9.74")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,6) == "2.9.77")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,7) == "2.10.10")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,7) == "2.10.20")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,7) == "2.10.26")
+                        fwVersion = "7.0 ";
+                    else if (fwBuild.substr(0,7) == "2.9.154")
+                        fwVersion = "7.1 ";
+                    else if (fwBuild.substr(0,7) == "2.9.172")
+                        fwVersion = "7.1 ";
+                    
                     fwVersion += "(" + fwBuild + ")";
                 } else {
                     fwVersion = 'unknown';
@@ -357,10 +461,13 @@ app.namespace(baseUrl, function() {
         fs.readFile(__dirname + "/welcome.html", "utf-8", function(err, data) {
             if (err) throw err;
             res.send(data.replace("MAGIC_NAV",nav)
+                 .replace("MAGIC_RAWOPTIONS", rawoptions)
                  .replace("MAGIC_OPTIONS", baseString + optionString)
                  .replace("MAGIC_VIN", vin)
+                 .replace("MAGIC_NAME", name)
                  .replace("MAGIC_FIRMWARE_VERSION", fwVersion)
-                 .replace("MAGIC_DISPLAY_SYSTEM", system));
+                 .replace("MAGIC_DISPLAY_SYSTEM", system)
+                 .replace("MAGIC_TESLAMS_VERSION", module.exports.version));
         });
     });
 
