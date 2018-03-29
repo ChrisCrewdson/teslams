@@ -510,7 +510,7 @@ app.namespace(baseUrl, function() {
                 vals = docs[0].record.toString().replace(",,",",0,").split(",");
                 res.write("[" + JSON.stringify(vals) + "]", "utf-8");
                 res.end();
-                db.close();
+                mongodb.close();
             });
         });
     });
@@ -600,7 +600,7 @@ app.namespace(baseUrl, function() {
                     var showTime = new Date(lastTime);
                     console.log("last timestamp:", lastTime, showTime.toString());
                 }
-                db.close();
+                mongodb.close();
             });
         });
     });
@@ -647,7 +647,7 @@ app.namespace(baseUrl, function() {
                         res.end(response, "utf-8");
                     });
                 });
-                db.close();
+                mongodb.close();
                 started = true;
             });
         });
@@ -800,7 +800,7 @@ app.namespace(baseUrl, function() {
                     outputVolt += ",[" + (+chartEnd) + ",0]";
                     outputPower += ",[" + (+chartEnd) + ",0]";
 
-                    db.close();
+                    mongodb.close();
                     fs.readFile(__dirname + "/energy.html", "utf-8", function(err, data) {
                         if (err) throw err;
                         var fD = new Date(firstDate);
@@ -895,7 +895,7 @@ app.namespace(baseUrl, function() {
                         comma = ',';
                     }
                 });
-                db.close();
+                mongodb.close();
                 fs.readFile(__dirname + "/test.html", "utf-8", function(err, data) {
                     if (err) throw err;
                     res.send(data.replace("MAGIC_TEST", output));
@@ -1163,7 +1163,7 @@ app.namespace(baseUrl, function() {
                     });
                     updateChargeValues(lastDoc);
                     updateChargeWValues(true);
-                    db.close();
+                    mongodb.close();
                     fs.readFile(__dirname + "/stats.html", "utf-8", function(err, data) {
                         if (err) throw err;
                         var fD = new Date(firstDate);
@@ -1255,7 +1255,7 @@ app.namespace(baseUrl, function() {
                             lltable += ",[0,0,0,0]";
                     });
                     table += "</tbody>\n";
-                    db.close();
+                    mongodb.close();
                     res.end(data.replace("MAGIC_NAV", nav)
                             .replace("MAGIC_TRIP_TABLE", table)
                             .replace("MAGIC_ADDR_TABLE", lltable), "utf-8");
