@@ -1,11 +1,14 @@
 #!/usr/bin/env node
+'use strict';
 require('pkginfo')(module, 'version');
 
 var JSONbig = require('json-bigint');
 var util = require('util');
 var teslams = require('../teslams.js');
 var argv = require('optimist')
-    .usage('Usage: $0 -u <username> -p <password> -acdDFgHimMPtvVwXZ -A [on|off] -C [start|stop] -L [lock|unlock] -O offset -R [std|max|50-90,100] -S [close|vent|comfort|open|0-100] -T temp')
+    .usage('Usage: $0 -u <username> -p <password> || --id <id_string> --token <bearer_token> \n -acdDFgHimMPtvVwXZ -A [on|off] -C [start|stop] -L [lock|unlock] -O offset -R [std|max|50-90,100] -S [close|vent|comfort|open|0-100] -T temp')
+    .string('id')
+    .string('token')
     .alias('u', 'username')
     .describe('u', 'Teslamotors.com login')
     .alias('p', 'password')
@@ -68,12 +71,15 @@ var creds = require('./config.js').config(argv);
 argv = argv.argv;
 
 if ( argv.help === true ) {
-    console.log( 'Usage: teslacmd.js -u <username> -p <password> -acdDFgHimMPtvVwXZ');
-    console.log( '                   -A [on|off] -C [start|stop] -L [lock|unlock] -O offset');
-    console.log( '                   -R [std|max|50-90|100] -S [close|vent|comfort|open|0-100] -T temp');
+    console.log( 'Usage: teslacmd.js -u <username> -p <password> OR --id <id_string> --token <bearer_token>');
+    console.log( '                   -acdDFgHimMPtvVwXZ');
+    console.log( '                   -A [on|off] -C [start|stop] -L [lock|unlock] -O <offset>');
+    console.log( '                   -R [std|max|50-90|100] -S [close|vent|comfort|open|0-100] -T <temp>');
     console.log( '\nOptions:');
     console.log( '  -u, --username  Teslamotors.com login                                                       [required]');
     console.log( '  -p, --password  Teslamotors.com password                                                    [required]');
+    console.log( '      --id        Vehicle id for the car you want to control                                  [required]');
+    console.log( '      --token     Teslamotors.com Bearer token (use --print_token to get a new token)         [required]');
     console.log( '  -a, --all       Print info for all vehicle on the users account                             [boolean]');
     console.log( '  -c              Display the charge state                                                    [boolean]');
     console.log( '  -d, --drive     Display the drive state                                                     [boolean]');
@@ -107,12 +113,15 @@ if (argv.version) {
     process.exit();
 }
 
+
+
 function pr( stuff ) {
     console.log( util.inspect(stuff) );
 }
 
 function parseArgs( vehicle ) {
     var vid = vehicle.id, err;
+
     if (argv.i) { 
         vehicle.id = vehicle.id.toString();
         vehicle.vehicle_id = vehicle.vehicle_id.toString();
@@ -219,8 +228,11 @@ function parseArgs( vehicle ) {
     }
 }
 
+if (argv.token) {
+    teslams.set_token(argv.token);
+} 
 
-teslams.all( { email: creds.username, password: creds.password }, function ( error, response, body ) {
+teslams.all( { email: creds.username, password: creds.password, token: creds.token}, function ( error, response, body ) {
     var data, vehicle;
     //check we got a valid JSON response from Tesla
     try { 
@@ -260,8 +272,12 @@ teslams.all( { email: creds.username, password: creds.password }, function ( err
                 parseArgs( vehicle );
             }
         });
+    } else if (argv.print_token) {
+        console.log( teslams.token );
     } else {
         // passed through all exit condition checks 
         setTimeout(function(){ parseArgs( vehicle ); }, 5000); // 5 sec delay just to avoid login errors and throttling by Tesla
     }
 });
+
+

@@ -1,8 +1,8 @@
-#Tesla Model S REST API
+# Tesla Model S REST API
 
 An implementation in Node.js of the client side interface to the Tesla Model S API documented at: 
 
-	http://docs.timdorr.apiary.io/
+http://docs.timdorr.apiary.io/
 
 This is unofficial documentation of the Tesla Model S REST API used by the iOS and Android apps. It features functionality to monitor and control the Model S remotely. Documentation is provided on the Apiary.io site linked above.
 
@@ -14,11 +14,11 @@ Be careful not to send your login and password to anyone other than Tesla or you
 
 Also ensure that you don't overwhelm the Tesla servers with requests. Calling REST APIs at very high frequency can put substantial load on the Tesla servers and might get your IP blocked by Tesla.
 
-#Disclaimer
+# Disclaimer
 
 Use these programs at your own risk. The authors do not guaranteed the proper functioning of these applications. This code attempts to use the same interfaces used by the official Tesla phone apps. However, it is possible that use of this code may cause unexpected damage for which nobody but you are responsible. Use of these functions can change the settings on your car and may have negative consequences such as (but not limited to) unlocking the doors, opening the sun roof, or reducing the available charge in the battery.
 
-#Contributors
+# Contributors
 Marshall Rose (https://github.com/mrose17)
 Dirk Hohndel (https://github.com/dirkhh)
 Arthur Blake (https://github.com/arthurblake)
@@ -26,7 +26,7 @@ Hans Jespersen (https://github.com/hjespers)
 Nick Triantos
 Chris Crewdson (https://github.com/ChrisCrewdson)
 
-#Installation
+# Installation
 
 To use these programs you must download and install 'node' from http://nodejs.org
 . Once node is installed, use the included 'npm' utility to download and install the teslams tools and all it's dependent modules
@@ -49,35 +49,43 @@ Or, you can instead create a json file in ~/.teslams/config.json and specify the
 		"password": "Your teslamotors.com password"
 	}
 	
-If you don't feel comfortable putting your password as a command line option (visible in the process table) or a file (visible to anyone who can read the file) then you can alternatively use the $TSLA_USERNAME and $TSLA_PASSWORD environment variables. These environment variable allow the execution of these apps in Heroku or other Platform-as-a-Service providers.
+You can alternatively use the $TSLA_USERNAME and $TSLA_PASSWORD environment variables. These environment variable allow the execution of these apps in Heroku or other Platform-as-a-Service providers.
 
-#teslams.js - The main library (for javascript programmers)
+Another alternative is to specify --token in order to reuse a pre-existing authentication token (and avoid using login and password). A 90 day token can be generated using 'teslacmd -u username -p password --print_token' and you can store it for reuse in ~/.teslams/config.json in place of username and password in the following format:
+
+	{
+		"token": "abc123abc123abc123abc123abc123abc123abc123"
+	}
+
+
+# teslams.js - The main library (for javascript programmers)
 
 Contains a library of functions and constants which allow the uses the TESLA "REST" API to get and set values on the Tesla Model S. 
 All functions take an optional callback that will be passed the javascript object returned from the TESLA API.
 
-Functions include:
-
-	get_vid()               - get the "id" of the Model S by logging into the Tesla portal
-	vehicles()              - login to portal and get vehicles list and options data
-	all()                   - get array of all vehicles (if more than one, we salute you!)
-	mobile_enabled()        - check is remote/mobile control is on or off
-	get_charge_state()      - get the full set of charge state information
-	get_climate_state()     - get the full set of climate state information 
-	get_drive_state()       - get the full set of drive state information
-	get_vehicle_state()     - get the full set of vehicle state information 
-	get_gui_settings()      - get the GUI setting
-	wake_up()               - wake up the communication with the car (if dormant) 
-	open_charge_port()      - open the charge port door 
-	charge_state()          - set the charging state 
-	charge_range()          - set the range mode 
-	flash()                 - flash the headlights 
-	honk()                  - honk the horn 
-	door_lock()             - lock/unlock the doors 
-	set_temperature()       - set the climate control temperatures
-	auto_conditioning()     - turn on/off the climate control (HVAC) system
-	sun_roof()              - control the sun roof 
-	stream()                - low-level interface to streaming service
+Function quick reference:
+	
+	get_vid(opt, cb)               - get the "id" of the Model S by logging into the Tesla portal
+	vehicles(opt, cb)              - login to portal and get vehicles list and options data
+	all(opt, cb)                   - get array of all vehicles (if more than one, we salute you!)
+	mobile_enabled(vid, cb)        - check is remote/mobile control is on or off
+	get_charge_state(vid, cb)      - get the full set of charge state information
+	get_climate_state(vid, cb)     - get the full set of climate state information 
+	get_drive_state(vid, cb)       - get the full set of drive state information
+	get_vehicle_state(vid, cb)     - get the full set of vehicle state information 
+	get_gui_settings(vid, cb)      - get the GUI setting
+	wake_up(vid, cb)               - wake up the communication with the car (if dormant) 
+	open_charge_port(vid, cb)      - open the charge port door
+	charge_state({id, charge}, cb) - set the charging state
+	charge_range({id, range, percent}, cb) - set the range mode. See RANGE constants.
+	flash(vid, cb)                 - flash the headlights 
+	honk(vid, cb)                  - honk the horn 
+	door_lock({id, lock}, cb) .    - boolean toggle door locks
+	set_temperature({id, dtemp, ptemp}, vb) - set the driver and passenger temp
+	auto_conditioning({id, climate}, cb) - turn on/off the HVAC system. See CLIMATE constants
+	sun_roof({id, roof, percent}, cb) - control the sun roof. See roof constants
+	stream(opt, cb)                - low-level interface to streaming service
+	set_token(token)               - set the bearer token for authenticating using a previously generated token
 
 Constants include:
 
@@ -96,7 +104,7 @@ Constants include:
 	ROOF_COMFORT - puts the roof in the 80% open position (for reduced noice)
 	ROOF_OPEN    - puts the roof in the 100% open position
 
-#teslacmd.js - Command Line Interface for all functions supported in the REST API 
+# teslacmd.js - Command Line Interface for all functions supported in the REST API 
 
 A sample command line application which uses the teslams.js library and takes command line arguments that allow all know REST API functions to be used.
 
@@ -108,35 +116,42 @@ For help run :
 
 	teslacmd --help
 
-	Usage: teslacmd.js -u <username> -p <password> -acdFgHimPtvwXZ -A [on|off] -C [start|stop] 
-	                   -R [std|max|50-90|100] -S [close|vent|comfort|open|0-100] -L [lock|unlock] -T <temp>
-
+	Usage: teslacmd.js -u <username> -p <password> OR --id <id_string> --token <bearer_token>
+	                   -acdDFgHimMPtvVwXZ
+	                   -A [on|off] -C [start|stop] -L [lock|unlock] -O <offset>
+	                   -R [std|max|50-90|100] -S [close|vent|comfort|open|0-100] -T <temp>
 	Options:
-	  -u, --username  Teslamotors.com login                                        [required]
-	  -p, --password  Teslamotors.com password                                     [required]
-	  -a, --all       Print info for all vehicle on the users account              [boolean]
-	  -c              Display the charge state                                     [boolean]
-	  -d, --drive     Display the drive state                                      [boolean]
-	  -F, --flash     Flash the car headlights                                     [boolean]
-	  -g, --gui       Display the GUI settings                                     [boolean]
-	  -H, --honk      Honk the car horn                                            [boolean]
-	  -i, --info      Print vehicle info                                           [boolean]
-	  -m, --mobile    Display the mobile state                                     [boolean]
-	  -P, --port      Open charge port door                                        [boolean]
-	  -t              Display the climate/temp state                               [boolean]
-	  -v              Display the vehicle state                                    [boolean]
-	  -w, --wake      Wake up the car telemetry                                    [boolean]
-      -X, --isplugged Check if car is plugged in and continue only if connected    [boolean]
-      -Z, --isawake   Check if car is asleep and continue only if awake            [boolean]
-	  -A, --climate   Turn the air conditioning and heating on/off               
-	  -C, --charge    Turn the charging on/off                                   
-	  -R, --range     Charging range mode: "std", "max", or %limit (50-90, or 100 )                       
-	  -S, --roof      Move the car sunroof to any position or %open
-	  -L, --lock      Lock/Unlock the car doors                                  
-	  -T, --temp      Set the car climate control temperature (in Celcius)       
-	  -?, --help      Print usage information                                  
+	  -u, --username  Teslamotors.com login                                                       [required]
+	  -p, --password  Teslamotors.com password                                                    [required]
+	      --id        Vehicle id for the car you want to control                                  [required]
+	      --token     Teslamotors.com Bearer token (use --print_token to get a new token)         [required]
+	  -a, --all       Print info for all vehicle on the users account                             [boolean]
+	  -c              Display the charge state                                                    [boolean]
+	  -d, --drive     Display the drive state                                                     [boolean]
+	  -D, --debug     Display debug information                                                   [boolean]
+	  -F, --flash     Flash the car headlights                                                    [boolean]
+	  -g, --gui       Display the GUI settings                                                    [boolean]
+	  -H, --honk      Honk the car horn                                                           [boolean]
+	  -i, --info      Print vehicle info                                                          [boolean]
+	  -m, --mobile    Display the mobile state                                                    [boolean]
+	  -M, --metric    Convert measurements in metric unit                                         [boolean]
+	  -P, --port      Open charge port door                                                       [boolean]
+	  -t              Display the climate/temp state                                              [boolean]
+	  -v              Display the vehicle state                                                   [boolean]
+	  -V, --version   Print version of teslams software                                           [boolean]
+	  -w, --wake      Wake up the car telemetry                                                   [boolean]
+	  -X, --isplugged Check if car is plugged in and continue only if connected to a charger      [boolean]
+	  -Z, --isawake   Check if car is asleep and continue only if awake                           [boolean]
+	  -A, --climate   Turn the air conditioning and heating on/off
+	  -C, --charge    Turn the charging on/off
+	  -L, --lock      Lock/Unlock the car doors
+	  -O, --vehicle   Vehicle offset (i.e. 0 or 1) for accounts with multiple vehicles
+	  -R, --range     Charging range mode: "std" or "max" or any percent from 50-90 or 100
+	  -S, --roof      Move the car sunroof to: "close", "vent", "comfort", "open" or any percent
+	  -T, --temp      Set the car climate control temperature (in Celcius)
+	  -?, --help      Print usage information
 
-#streaming.js - Capture and log real-time telemetry to a file or MongoDB for analytics and visualization
+# streaming.js - Capture and log real-time telemetry to a file or MongoDB for analytics and visualization
 
 <img src=http://farm9.staticflickr.com/8241/8526534730_75643b3247_c.jpg>
 
@@ -145,7 +160,7 @@ A valid teslamotors.com login and password is required and must be provided on t
 
 By default the output goes to a file called "streaming.out" which can also be changed with command line options. Each time you run the program you will over-write the output file so copy old log data or specify a different output file before running the application a second time.
 
-Data can be stored in MongoDB using the --db flag. This requires that you separately download, install, and start mongodb on your local host (see http://www.mongodb.org/downloads).
+Data can be stored in MongoDB using the --db flag. This requires that you separately download, install, and start mongodb on your local host (see http://www.mongodb.org/downloads or https://docs.docker.com/samples/library/mongo/).
 
 To execute run:
 
@@ -167,7 +182,7 @@ For help run :
 		  -?, --help      Print usage information                                            
 
 
-#visualize.js - Graphically display historical data captured using streaming.js
+# visualize.js - Graphically display historical data captured using streaming.js
 
 A sample application that uses streaming data collected in MongoDB by the streaming.js app and makes it visible in a browser. For this app to work you need to be logging the streaming data into a database (see the streaming app above for details). Visualize then takes those data and shows them as a web application. You can connect to the main page for a simple welcome screen that allows you to pick the data range and then select one of the (currently) three supported applications:
 
@@ -210,7 +225,7 @@ if you don't have a "visualize" property in your config file, authentication is 
 
 
 
-#chargebar.js - monitor your car from your desktop 
+# chargebar.js - monitor your car from your desktop 
 
 
 <img src="http://farm9.staticflickr.com/8236/8535066907_f22a61b061_c.jpg">
@@ -235,7 +250,7 @@ For help run :
 	Missing required arguments: u, p
 
 
-#climatemon.js - monitor the temperature of your car from your desktop 
+# climatemon.js - monitor the temperature of your car from your desktop 
 
 <img src="http://farm9.staticflickr.com/8099/8573246292_3361647e14_b.jpg">
 
@@ -263,7 +278,7 @@ For help run :
 	Missing required arguments: u, p
 
 
-#teslamap.js - dude, where's my car?
+# teslamap.js - dude, where's my car?
 
 <img src="http://farm9.staticflickr.com/8248/8555931850_c2ae011075_z.jpg">
 
@@ -290,7 +305,7 @@ For help run :
 
 	Missing required arguments: u, p
 
-#example.js - a hello world app that uses the "teslams" node module 
+# example.js - a hello world app that uses the "teslams" node module 
 
 A very simple sample application which uses the teslams.js library to call common functions provided in the REST API.
 A valid teslamotors.com login and password is required and must be inserted into the config.json configuration file.
@@ -307,7 +322,7 @@ To execute change into the examples directory to run:
 	cd ~/node_modules/teslams/examples
 	node example
 
-#Feedback and Support
+# Feedback and Support
 
 For more information, feedback, or community support see the Tesla Motors Club forum at http://www.teslamotorsclub.com/showthread.php/13410-Model-S-REST-API or email teslams@googlegroups.com
 
