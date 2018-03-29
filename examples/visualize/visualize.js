@@ -59,6 +59,10 @@ var started = false;
 var from, to;
 var capacity;
 var express = require('express');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var session = require('express-session');
+
 require('express-namespace');
 var app = express();
 var passport = require('passport'), LocalStrategy = require('passport-local').Strategy;
@@ -76,8 +80,8 @@ var baseText = {
     RENA: "North American",
     REEU: "European",
     TM02: "Signature",
-    PF00: "S",
     PBT85: "P85",
+    BT85: "85",
     PX01: "PLUS",
     BT60: "60",
     BT40: "40",
@@ -234,15 +238,19 @@ passport.use(new LocalStrategy(
 
 app.namespace(baseUrl, function() {
 
-    app.use(express.cookieParser());
-    //deprecated in connect 3.0
-    //app.use(express.bodyParser());
-    app.use(express.urlencoded())
-    app.use(express.json())
-    app.use(express.session({ secret: localSecret }));
+    app.use(cookieParser());
+    app.use(bodyParser.urlencoded({
+        extended: true,
+    }));
+    app.use(bodyParser.json());
+    app.use(session({
+        secret: localSecret,
+        resave: false,
+        saveUninitialized: true,
+    }));
+
     app.use(passport.initialize());
     app.use(passport.session());
-    app.use(app.router);
 
     // simple login screen with correspoding POST setup
     app.get('/login', function(req,res) {
