@@ -113,8 +113,10 @@ if (argv.db) {
     // TODO: maybe add a mongouri config paramter to the config.json so people can set this explicitly
     var mongoUri = process.env.MONGOLAB_URI|| process.env.MONGOHQ_URI || 'mongodb://127.0.0.1:27017/' + argv.db;
 
-    MongoClient.connect(mongoUri, function(err, db) {
+    MongoClient.connect(mongoUri, function(err, mongodb) {
         if(err) throw err;
+        // TODO: make this an ENV var
+        var db = mongodb.db('heroku_q86wtg3n')
         collectionS = db.collection('tesla_stream');
         collectionA = db.collection('tesla_aux');
     });
