@@ -316,9 +316,11 @@ app.namespace(baseUrl, function() {
         var yearStart = new Date(d.getFullYear(),0,1);
         return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
     }
-    MongoClient.connect(mongoUri, function(err, db) {
+    MongoClient.connect(mongoUri, function(err, mongodb) {
         // this is the first time we connect - if we get an error, just throw it
         if(err) throw(err);
+        // TODO: make this an ENV var
+        var db = mongodb.db('heroku_q86wtg3n')
         var collectionA = db.collection("tesla_aux");
         // get the last stored entry that describes the vehicles
         var query = {'vehicles': { '$exists': true } };
@@ -482,11 +484,13 @@ app.namespace(baseUrl, function() {
     app.get('/getdata', ensureAuthenticated, function (req, res) {
         var ts, options, vals;
         if (argv.verbose) console.log('/getdata with',req.query.at);
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if(err) {
                 console.log('error connecting to database:', err);
                 return;
             }
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("tesla_stream");
             if (req.query.at === null) {
                 if (argv.verbose) console.log("why is there no 'at' parameter???");
@@ -512,11 +516,13 @@ app.namespace(baseUrl, function() {
     });
 
     app.get('/storetrip', ensureAuthenticated, function(req, res) {
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if (err) {
                 console.log('error connecting to database:', err);
                 return;
             }
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("trip_data");
             collection.remove({ 'dist': '-1'}, function(err,docs) {
                 collection.insert(req.query, { 'safe': true }, function(err,docs) {
@@ -531,11 +537,13 @@ app.namespace(baseUrl, function() {
     });
 
     app.get('/getlasttrip', ensureAuthenticated, function(req, res) {
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if (err) {
                 console.log('error connecting to database:', err);
                 return;
             }
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("trip_data");
             var options = { 'sort': [['chargeState.battery_range', 'desc']] };
             collection.find({},{ 'sort': [['from', 'desc']], 'limit': 1 }).toArray(function(err,docs) {
@@ -550,11 +558,13 @@ app.namespace(baseUrl, function() {
         // we don't keep the database connection as that has caused occasional random issues while testing
         if (!started)
             return;
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if(err) {
                 console.log('error connecting to database:', err);
                 return;
             }
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("tesla_stream");
             if (req.query.until === null) {
                 console.log("why is there no 'until' parameter???");
@@ -612,11 +622,13 @@ app.namespace(baseUrl, function() {
             res.redirect(baseUrl + '/map?from=' + dates.fromQ + '&to=' + dates.toQ + '&speed=' + speedQ.toFixed(0) + params);
             return;
         }
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if(err) {
                 console.log('error connecting to database:', err);
                 return;
             }
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("tesla_stream");
             var searchString = {$gte: +from, $lte: +to};
             collection.find({"ts": searchString}).limit(1).toArray(function(err,docs) {
@@ -666,13 +678,15 @@ app.namespace(baseUrl, function() {
         var gMaxE = -1000, gMaxS = -1000;
         var gMinE = 1000, gMinS = 1000;
         var cumulE = 0, cumulR = 0, cumulES, cumulRS, prevTS;
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             var speed, energy, soc, vals;
             if(err) {
                 console.log('error connecting to database:', err);
                 return;
             }
             res.setHeader("Content-Type", "text/html");
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("tesla_stream");
             collection.find({"ts": {$gte: +from, $lte: +to}}).toArray(function(err,docs) {
                 docs.forEach(function(doc) {
@@ -726,7 +740,6 @@ app.namespace(baseUrl, function() {
                 var chartEnd = lastDate;
 
                 // now look for data in the aux collection
-
                 var collection = db.collection("tesla_aux");
                 var maxAmp = 0, maxVolt = 0, maxMph = 0, maxPower = 0;
                 var outputAmp = "", outputVolt = "", outputPower = "";
@@ -864,12 +877,14 @@ app.namespace(baseUrl, function() {
         return delta / 1000;
     }
     app.get('/test', ensureAuthenticated, function(req, res) {
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if(err) {
                 console.log('error connecting to database:', err);
                 return;
             }
             var output = "";
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("tesla_aux");
             var options = { 'sort': [['chargeState.battery_range', 'desc']] };
             collection.find({"chargeState": {$exists: true}}).toArray(function(err,docs) {
@@ -909,12 +924,14 @@ app.namespace(baseUrl, function() {
         }
         var outputD = "", outputC = "", outputA = "", comma, firstDate = 0, lastDay = 0, lastDate = 0, distHash = {}, useHash = {};
         var outputWD = "", outputWC = "", outputWA = "", commaW, distWHash = {}, useWHash ={};
-        MongoClient.connect(mongoUri, function(err, db) {
+        MongoClient.connect(mongoUri, function(err, mongodb) {
             if(err) {
                 console.log('error connecting to database:', err);
                 return;
             }
             res.setHeader("Content-Type", "text/html");
+            // TODO: make this an ENV var
+            var db = mongodb.db('heroku_q86wtg3n')
             var collection = db.collection("tesla_stream");
             if (argv.verbose)
                 console.log("starting DB request after", new Date().getTime() - debugStartTime, "ms");
@@ -1198,11 +1215,13 @@ app.namespace(baseUrl, function() {
             table += "<th rowspan=2>Wegstrecke</th><th rowspan=2>Reisezweck</th><th rowspan=2>Auto<br>Kennzeichen</th>";
             table += "<th rowspan=2>KM Stand am<br>Zielort</th><th rowspan=2>Unterschrift</th></tr>";
             table += "<tr><th>Datum</th><th>Zeit</th><th>Datum</th><th>Zeit</th></tr></thead>";
-            MongoClient.connect(mongoUri, function(err, db) {
+            MongoClient.connect(mongoUri, function(err, mongodb) {
                 if(err) {
                     console.log('error connecting to database:', err);
                     return;
                 }
+                // TODO: make this an ENV var
+                var db = mongodb.db('heroku_q86wtg3n')
                 var collection = db.collection("trip_data");
                 // strangely the timestamps end up in the database as strings
                 var searchString = {$and: [ {'from': {$gte: ""+from.getTime()}}, {'to': {$lte: ""+to.getTime()}} ] };
